@@ -43,6 +43,38 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  _onNewCameraSelected(CameraDescription cameraDescription) async {
+    if (cameraController != null) {
+      await cameraController?.dispose();
+    }
+
+    cameraController = CameraController(
+      cameraDescription,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
+    cameraController!.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+      if (cameraController!.value.hasError) {
+        debugPrint(
+          '[Camera] Error: ${cameraController?.value.errorDescription}',
+        );
+      }
+    });
+    try {
+      await cameraController!.initialize();
+    } on CameraException catch (e) {
+      debugPrint('[Camera] ${e.code}');
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +96,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     cameraController?.dispose();
     super.dispose();
+  }
+
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    final CameraController? controller = cameraController;
+
+    if (controller == null && !controller!.value.isInitialized) {
+      return;
+    }
+
+    if (lifecycleState == AppLifecycleState.inactive) {
+      controller.dispose();
+    } else if (lifecycleState == AppLifecycleState.resumed) {
+      _onNewCameraSelected(controller.description);
+    }
   }
 
   @override
@@ -89,6 +135,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   filter: ImageFilter.blur(
                     sigmaX: 4,
                     sigmaY: 4,
+                  ),
+                ),
+                ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).primaryColor,
+                    BlendMode.srcOut,
+                  ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          backgroundBlendMode: BlendMode.dstOut,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
