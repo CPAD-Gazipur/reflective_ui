@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:reflective_ui/main.dart';
+import 'package:reflective_ui/views/home/widgets/home_content.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function updateTheme;
@@ -148,6 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           backgroundBlendMode: BlendMode.dstOut,
+                        ),
+                        child: HomeContent(
+                          onThemeChange: widget.updateTheme,
                         ),
                       ),
                     ],
